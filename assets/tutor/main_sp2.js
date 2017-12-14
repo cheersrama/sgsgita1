@@ -1,4 +1,3 @@
-
 	//////////////////////////////////////////////////////////////
 	// GLOBAL VARIABLES
 	//////////////////////////////////////////////////////////////
@@ -84,9 +83,10 @@
 
 	var _curTime = 0;
 	var _tutorJSONFileName = "tutor_chapter.json";
-	var _tutorMP3FileName = "tutor_chapter.mp3";
+	var _tutorMP3FileName = "tutor_chapter";
 	var _plainJSONFileName = "plain_chapter.json";
-	var _plainMP3FileName = "plain_chapter.mp3";
+	var _plainMP3FileName = "plain_chapter";
+    var _fileExt = "";
 	var _tutorFile = false;
 	var _tutotJSONFile = false;
 	var _tutorMP3File = false;
@@ -110,11 +110,41 @@
 	var _defaultText = "";
 	var _selectedChapter = "";
 
+    var _whichBrowser = "";
+
 	//////////////////////////////////////////////////////////////
 	// code begin
 	//////////////////////////////////////////////////////////////
 	$(document).ready(init);
 
+
+    function browserCheck() { 
+         if((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1 ) 
+        {
+            _whichBrowser = "Opera";
+        }
+        else if(!!window.chrome && !!window.chrome.webstore)
+        {
+            _whichBrowser = "Chrome";
+        }
+        else if(/constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification)))
+        {
+            _whichBrowser = "Safari";
+        }
+        else if(typeof InstallTrigger !== 'undefined') 
+        {
+             _whichBrowser = "Firefox";
+        }
+        else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true ) || ( (navigator.appName == "Netscape") && 
+        (navigator.appVersion.indexOf('Trident') === -1))) //IF IE > 10
+        {
+            _whichBrowser = "IE";
+        }  
+        else 
+        {
+           
+        }
+    }
 
 	function resetSpeed() {
 		if ($("#playSpeed").length > 0)
@@ -150,6 +180,16 @@
 		}
 		$("h3").attr('style', txt);
 		$(".navbar-brand").attr('style', txt2);
+        
+        browserCheck();
+        if(_whichBrowser == "Firefox") {
+            _fileExt = ".ogg";
+        } else if(_whichBrowser == "IE") {
+            _fileExt = ".mp3";  
+        } else {
+            _fileExt = ".m4a";
+        }
+        
 	}
 
 	$(window).resize(function() {
@@ -204,7 +244,7 @@
 					   "08 अक्षरब्रह्म योगः|09 राजविद्याराजगुह्य योगः|10 विभूति योगः|11 विश्वरूपदर्शन योगः|12 भक्ति योगः|13 क्षेत्रक्षेत्रज्ञविभाग योगः|14 गुणत्रयविभाग योगः|" +
 					   "15 पुरुषोत्तम योगः|16 दैवासुरसम्पद्विभाग योगः|17 श्रद्धात्रयविभाग योगः|18 मोक्षसन्न्यास|गीतामाहात्म्यम्|गीतासारम्").split("|");
 		*/
-		var textArr  = ("08 अक्षरपरब्रह्म योगः|12 भक्ति योगः").split("|");
+		var textArr  = ("01 अर्जुनविषाद योगः|02 साङ्ख्य योगः|03 कर्म योगः|04 ज्ञान योगः|05 कर्मसन्न्यास योगः|06 आत्मसंयम योगः").split("|");
 		
 
 		if (_lang != 'devanagari') {
@@ -252,14 +292,14 @@
 		//parseShlokaFromJSONFileMng("./" + selChap + "/meaning.json");
 
 		if (_selectedChapter != _empty) {
-			_mediaElementRef.type = "audio/mpeg";
+			//_mediaElementRef.type = "audio/mpeg";
 			if (_tutorialMode) {
 				_tutorFile = true;
 				parseShlokaFromJSONFile("./" + _selectedChapter + "/" + _tutorJSONFileName);
-				_mediaElementRef.src = "./" + _selectedChapter + "/" + _tutorMP3FileName;
+				_mediaElementRef.src = "./" + _selectedChapter + "/" + _tutorMP3FileName + _fileExt;
 			} else {
 				parseShlokaFromJSONFile("./" + _selectedChapter + "/" + _plainJSONFileName);
-				_mediaElementRef.src = "./" + _selectedChapter + "/" + _plainMP3FileName;
+				_mediaElementRef.src = "./" + _selectedChapter + "/" + _plainMP3FileName + _fileExt;
 			}
 			_sliderStartPos = 0;
 			_sliderEndPos = 0;
@@ -684,6 +724,7 @@
 		if (stPos != _startPos) {
 			_startPos = stPos;
 			_mediaElementRef.currentTime = _startPos;
+			_mediaElementRef.play();
 			_curTime = _startPos;
 			if (slSt > _sliderStartingtPos)
 				_uvachaCount = getUvachaCount(+_sliderStartingtPos, +slSt);
@@ -718,7 +759,7 @@
 		}
 		_sliderEndingPos = slEnd;
 
-		_mediaElementRef.play();
+		
 
 		_sliderMove = isT;
 		if(_sliderMove)
@@ -1103,8 +1144,10 @@
 	function sliderPlayRangeTu(slSt, slEnd, isTop) {
 		_shlokaCntr = slSt;
 		_shlokaLine = 0;
+		_teacher = true;
 		getShlokaStartTmAndWrdCntTu(_shlokaCntr);
 		_mediaElementRef.currentTime = _currStTm;
+		_mediaElementRef.play();
 		_sliderDiff = slSt - _sliderStartingtPos;
 
 		scrollDisplayTu(true, _sliderDiff, _sliderSpeed, 0);
@@ -1339,7 +1382,7 @@
 		var sec = 0;
 		var secFound = false;
 
-		for (sec = 0; sec < _wordCnt; sec++) {
+		for (sec = _startWordPos; sec < _wordCnt; sec++) {
 			if (txt == _secDtlsArrDisplay[sec].text) {
 				secFound = true;
 				break;
@@ -1410,9 +1453,22 @@
 		}
 	}
 
+    function getWordCntTu(liNbr) {
+        _startWordPos = 0;
+        for(i=0; i<+liNbr; i++) {
+            shl = _entireChapterData.shloka[i];
+            numEntries = shl.entry.length;
+            for (j = 0; j < numEntries; j++) {
+                if(shl.entry[j].teacher == "YS")  {
+                   _startWordPos++; 
+                }
+            }
+        }
+    }
 
 	function getShlokaStartTmAndWrdCntTu(lineNumber) {
 		if (lineNumber != _sliderEndPos) {
+            getWordCntTu(lineNumber);
 			shl = _entireChapterData.shloka[lineNumber];
 			numEntries = shl.entry.length;
 
@@ -1500,7 +1556,7 @@
 					if (_teacher)
 						mediaElement.currentTime = _nextStTm;
 					if (_student)
-						mediaElement.currentTime = (_nextStTm - 0.3000);
+						mediaElement.currentTime = (_nextStTm - 0.1000);
 				}
 			}
 			getShlokaStartTmAndWrdCntTu(_shlokaCntr);
